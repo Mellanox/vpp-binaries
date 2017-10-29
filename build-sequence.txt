@@ -1,0 +1,83 @@
+build procedure
+--------------- 
+# for vpp 17.10 , DPDK 17.08 required Mellanox OFED 4.1 GA
+    git clone https://github.com/Mellanox/vpp-binaries.git # this brings all the vpp *.deb files 
+    #scp /root/tmp the mofed 4.1 GA 	    
+    sudo /root/tmp/mlnxofedinstall --force
+    sudo /etc/init.d/openibd restart
+    sudo dpkg -i vpp-binaries/ubuntu1604/vpp-lib*
+    sudo dpkg -i vpp-binaries/ubuntu1604/vpp_17*
+# set /etc/vpp/startup.conf && hugepages
+    sudo vpp -c /etc/vpp/startup.conf
+
+results:
+--------
+ubuntu@ubuntu:~/vpp.bin$ sudo vpp -c /etc/vpp/startup.conf
+
+vlib_plugin_early_init:356: plugin path /usr/lib/vpp_plugins
+load_one_plugin:184: Loaded plugin: acl_plugin.so (Access Control Lists)
+load_one_plugin:184: Loaded plugin: dpdk_plugin.so (Data Plane Development Kit (DPDK))
+load_one_plugin:184: Loaded plugin: flowprobe_plugin.so (Flow per Packet)
+load_one_plugin:184: Loaded plugin: gtpu_plugin.so (GTPv1-U)
+load_one_plugin:184: Loaded plugin: ila_plugin.so (Identifier-locator addressing for IPv6)
+load_one_plugin:184: Loaded plugin: ioam_plugin.so (Inbound OAM)
+load_one_plugin:114: Plugin disabled (default): ixge_plugin.so
+load_one_plugin:184: Loaded plugin: lb_plugin.so (Load Balancer)
+load_one_plugin:184: Loaded plugin: libsixrd_plugin.so (IPv6 Rapid Deployment on IPv4 Infrastructure (RFC5969))
+load_one_plugin:184: Loaded plugin: memif_plugin.so (Packet Memory Interface (experimetal))
+load_one_plugin:184: Loaded plugin: nat_plugin.so (Network Address Translation)
+load_one_plugin:184: Loaded plugin: pppoe_plugin.so (PPPoE)
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/memif_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/dpdk_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/lb_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/flowprobe_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/udp_ping_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/ioam_trace_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/ioam_export_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/ioam_pot_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/vxlan_gpe_ioam_export_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/acl_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/pppoe_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/ioam_vxlan_gpe_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/nat_test_plugin.so
+vpp[62768]: load_one_plugin:63: Loaded plugin: /usr/lib/vpp_api_test_plugins/gtpu_test_plugin.so
+vpp[62768]: dpdk_config:1215: EAL init args: -c 1 -n 4 --huge-dir /run/vpp/hugepages --file-prefix vpp -w 0000:07:00.0 -w 0000:07:00.1 --master-lcore 0 --socket-mem 2048,2048
+<majd:set_debug_mask:491> debug mask: 0
+<majd:set_debug_mask:491> debug mask: 0
+<majd:set_debug_mask:491> debug mask: 0
+<majd:set_debug_mask:491> debug mask: 0
+DPDK physical memory layout:
+Segment 0: phys:0x40000000, len:1073741824, virt:0x7f9d80000000, socket_id:0, hugepage_sz:1073741824, nchannel:0, nrank:0
+Segment 1: phys:0x100000000, len:1073741824, virt:0x7f9000000000, socket_id:0, hugepage_sz:1073741824, nchannel:0, nrank:0
+Segment 2: phys:0x1040000000, len:2147483648, virt:0x7f8080000000, socket_id:1, hugepage_sz:1073741824, nchannel:0, nrank:0
+
+
+In a different terminal :
+-------------------------
+>vppctl
+vpp# show interface
+              Name               Idx       State          Counter          Count
+FortyGigabitEthernet7/0/0         1        down
+FortyGigabitEthernet7/0/1         2        down
+local0                            0        down
+vpp# set interface l2 bridge FortyGigabitEthernet7/0/0 1
+vpp# show interface
+              Name               Idx       State          Counter          Count
+FortyGigabitEthernet7/0/0         1        down
+FortyGigabitEthernet7/0/1         2        down
+local0                            0        down
+vpp# set interface l2 bridge FortyGigabitEthernet7/0/1 1
+vpp# set interface l2 forward FortyGigabitEthernet7/0/0
+vpp# set interface l2 forward FortyGigabitEthernet7/0/1
+vpp# set interface l2 learn FortyGigabitEthernet7/0/0
+vpp# set interface l2 learn FortyGigabitEthernet7/0/1
+vpp# set interface state FortyGigabitEthernet7/0/0 up
+vpp# set interface state FortyGigabitEthernet7/0/1 up
+vpp# show interface
+              Name               Idx       State          Counter          Count
+FortyGigabitEthernet7/0/0         1         up
+FortyGigabitEthernet7/0/1         2         up
+local0                            0        down
+
+
+

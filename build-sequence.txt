@@ -7,8 +7,18 @@ build procedure
     sudo /etc/init.d/openibd restart
     sudo dpkg -i vpp-binaries/ubuntu1604/vpp-lib*
     sudo dpkg -i vpp-binaries/ubuntu1604/vpp_17*
+    sudo dpkg -i vpp-binaries/ubuntu1604/vpp-dpdk-dev*
+    sudp dpkg -i vpp-binaries/ubuntu1604/vpp-plugins*	
 # set /etc/vpp/startup.conf && hugepages
-    sudo vpp -c /etc/vpp/startup.conf
+   sudo su root
+   echo 4096 > /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages
+   echo 128 > /sys/devices/system/node/node0/hugepages/hugepages-1048576kB/nr_hugepages
+#  sudo su <user>
+#  lspci | grep Mell to find the right PCI and set in the startup.conf dpdk { }
+#  comment in the socket-mem
+   sudo vpp -c /etc/vpp/startup.conf
+
+
 
 results:
 --------
